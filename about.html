@@ -46,7 +46,7 @@
 
   <section class="section">
     <div class="wrap story-grid">
-      <img src="https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=900&q=80" alt="Rows of sneakers on a shelf inside the SNKRS HUB stockroom">
+      <img id="story-img" src="" alt="Rows of sneakers on a shelf inside the SNKRS HUB stockroom">
       <div>
         <span class="eyebrow">What We Do</span>
         <h2 style="font-size:clamp(26px,3vw,34px); margin:10px 0 18px;">Sourced Right, Checked Twice</h2>
@@ -161,7 +161,11 @@
   </div>
 </footer>
 
+<script src="js/placeholder.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/main.js"></script>
+<script>
+  document.getElementById("story-img").src = placeholderImage("Stockroom — Shelf of Sneakers", "4:3");
+</script>
 </body>
 </html>
