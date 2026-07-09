@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SNKRS HUB — Shopify CSV Generator</title>
+<style>
+  :root {
+    --black: #121110;
+    --white: #ffffff;
+    --paper: #faf9f7;
+    --line: #e6e3dd;
+    --line-strong: #d3cfc6;
+    --grey: #726c62;
+    --red: #c8272a;
+    --green: #2e7d4f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Inter", sans-serif;
+    background: var(--white);
+    color: var(--black);
+    padding: 32px 20px 80px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 {
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  .sub { color: var(--grey); font-size: 14px; margin-bottom: 28px; }
+  .card {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 4px;
+    padding: 22px;
+    margin-bottom: 22px;
+  }
+  .card h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--grey);
+    margin: 0 0 16px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--grey);
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  label:first-of-type { margin-top: 0; }
+  input, textarea {
+    width: 100%;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--white);
+    color: var(--black);
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--black); }
+  .hint { font-size: 12px; color: var(--grey); margin-top: 4px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .colors-list, .images-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .color-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: start;
+    background: var(--white);
+    border: 1px solid var(--line);
+    padding: 8px;
+    border-radius: 3px;
+  }
+  .color-row input { margin: 0; }
+  .color-row textarea { margin: 0; font-size: 13px; min-height: 62px; resize: vertical; }
+  .upload-cell { display: flex; flex-direction: column; gap: 6px; }
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--white);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .upload-btn:hover { border-color: var(--black); }
+  .upload-btn input[type="file"] { display: none; }
+  .upload-status { font-size: 11px; color: var(--grey); min-height: 14px; }
+  .upload-status.uploading { color: var(--black); }
+  .upload-status.error { color: var(--red); }
+  .upload-status.done { color: var(--green); }
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--line-strong);
+    color: var(--red);
+    border-radius: 3px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--line-strong);
+    color: var(--black);
+    border-radius: 3px;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .add-btn:hover { border-color: var(--black); }
+  .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  button.primary {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 3px;
+    padding: 13px 22px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  button.primary:hover { opacity: 0.85; }
+  button.secondary {
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--black);
+    border-radius: 3px;
+    padding: 13px 22px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  .queue {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .queue-item:last-child { border-bottom: none; }
+  .queue-item .meta { color: var(--grey); font-size: 12px; }
+  .queue-item button {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  .empty { padding: 20px; color: var(--grey); font-size: 14px; text-align: center; }
+  .count-pill {
+    display: inline-block;
+    background: var(--black);
+    color: var(--white);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+  .export-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .status {
+    font-size: 13px;
+    color: var(--green);
+    margin-top: 10px;
+    display: none;
+  }
+  .status.visible { display: block; }
+  .preview {
+    margin-top: 14px;
+    max-height: 220px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--white);
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6px 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th { background: var(--paper); position: sticky; top: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Shopify CSV Generator</h1>
+  <p class="sub">Fill in one shoe at a time. It expands into every color and size combination automatically, ready to upload straight into Shopify's product importer.</p>
+
+  <div class="card">
+    <h2>Add a Shoe</h2>
+
+    <label>Product Name</label>
+    <input id="title" placeholder="e.g. Featherweight">
+
+    <div class="row2">
+      <div>
+        <label>Brand / Vendor</label>
+        <input id="vendor" placeholder="e.g. New Balance">
+      </div>
+      <div>
+        <label>Tag (usually same as brand)</label>
+        <input id="tag" placeholder="e.g. New Balance">
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Price (JOD)</label>
+        <input id="price" type="number" step="0.01" placeholder="e.g. 40">
+      </div>
+      <div>
+        <label>Compare At Price (only if on sale, leave blank otherwise)</label>
+        <input id="comparePrice" type="number" step="0.01" placeholder="e.g. 50">
+      </div>
+    </div>
+
+    <label>Sizes (comma separated)</label>
+    <input id="sizes" placeholder="36, 37, 38, 39, 40">
+    <p class="hint">These apply to every color you add below.</p>
+
+    <label>Description (optional)</label>
+    <textarea id="description" rows="2" placeholder="Short product description"></textarea>
+
+    <label>Colors</label>
+    <p class="hint">Click "Upload Photo" to pick images straight from your computer, they upload automatically and the link fills in for you. You can still paste Google Drive links directly if you'd rather.</p>
+    <div class="colors-list" id="colorsList"></div>
+    <button class="add-btn" onclick="addColorRow()">+ Add another color</button>
+
+    <div class="btn-row">
+      <button class="primary" onclick="addProduct()">Add Shoe to List</button>
+      <button class="secondary" onclick="clearForm()">Clear Form</button>
+    </div>
+    <div class="status" id="addStatus"></div>
+  </div>
+
+  <div class="card">
+    <h2>Your Products <span class="count-pill" id="queueCount">0</span></h2>
+    <div class="queue" id="queue">
+      <div class="empty">No shoes added yet. Fill in the form above and click "Add Shoe to List".</div>
+    </div>
+
+    <div class="export-bar">
+      <span class="hint" id="rowCountText">0 CSV rows ready</span>
+      <div class="btn-row" style="margin-top:0;">
+        <button class="secondary" onclick="previewCSV()">Preview CSV</button>
+        <button class="secondary" onclick="downloadCSV()">Download CSV</button>
+        <button class="primary" onclick="pushToShopify()">Push to Shopify</button>
+      </div>
+    </div>
+    <div class="preview" id="previewBox" style="display:none;"></div>
+    <div class="preview" id="pushLog" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+// Paste your Google Apps Script Web App URL here after you deploy it
+const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbzcTnwK9T159cug3R9cKje3HyTvEgrSNIjPPcwVA-qD-TXx1mORi1-hU_Jw5_niVhBt/exec";
+
+// Cloudinary account details, used to turn uploaded photos into public URLs
+const CLOUDINARY_CLOUD_NAME = "zc9wvarz";
+const CLOUDINARY_UPLOAD_PRESET = "snkrshub_products";
+
+let products = [];
+let colorRowId = 0;
+
+function uploadToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: "POST",
+    body: formData
+  }).then(res => {
+    if (!res.ok) throw new Error("Upload failed (" + res.status + ")");
+    return res.json();
+  }).then(data => data.secure_url);
+}
+
+function attachFileUploader(colorRowEl) {
+  const fileInput = colorRowEl.querySelector(".color-file-input");
+  const textarea = colorRowEl.querySelector(".color-image");
+  const statusEl = colorRowEl.querySelector(".upload-status");
+
+  fileInput.addEventListener("change", async () => {
+    const files = Array.from(fileInput.files);
+    if (files.length === 0) return;
+
+    let uploaded = 0;
+    statusEl.className = "upload-status uploading";
+    statusEl.textContent = `Uploading 0 of ${files.length}...`;
+
+    for (const file of files) {
+      try {
+        const url = await uploadToCloudinary(file);
+        const current = textarea.value.trim();
+        textarea.value = current ? current + "\n" + url : url;
+        uploaded++;
+        statusEl.className = "upload-status uploading";
+        statusEl.textContent = `Uploading ${uploaded} of ${files.length}...`;
+      } catch (err) {
+        statusEl.className = "upload-status error";
+        statusEl.textContent = `Upload failed: ${err.message}`;
+        return;
+      }
+    }
+
+    statusEl.className = "upload-status done";
+    statusEl.textContent = `${uploaded} photo(s) uploaded.`;
+    fileInput.value = "";
+  });
+}
+
+function convertDriveLink(text) {
+  const regex = /https?:\/\/drive\.google\.com\/(?:file\/d\/([a-zA-Z0-9_-]+)|open\?id=([a-zA-Z0-9_-]+)|uc\?(?:export=view&)?id=([a-zA-Z0-9_-]+))[^\s]*/g;
+  return text.replace(regex, (match, id1, id2, id3) => {
+    const id = id1 || id2 || id3;
+    return `https://drive.google.com/uc?export=view&id=${id}`;
+  });
+}
+
+function attachDriveConverter(textarea) {
+  textarea.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text");
+    const converted = convertDriveLink(pasted);
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const current = textarea.value;
+    textarea.value = current.slice(0, start) + converted + current.slice(end);
+    const newPos = start + converted.length;
+    textarea.selectionStart = textarea.selectionEnd = newPos;
+  });
+}
+
+function addColorRow() {
+  colorRowId++;
+  const div = document.createElement("div");
+  div.className = "color-row";
+  div.dataset.id = colorRowId;
+  div.innerHTML = `
+    <input placeholder="Color name (e.g. Blush)" class="color-name">
+    <div class="upload-cell">
+      <textarea placeholder="Paste Google Drive link(s) here, one per line, or click Upload Photo below." class="color-image"></textarea>
+      <label class="upload-btn">
+        Upload Photo(s)
+        <input type="file" class="color-file-input" accept="image/*" multiple>
+      </label>
+      <div class="upload-status"></div>
+    </div>
+    <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+  `;
+  document.getElementById("colorsList").appendChild(div);
+  attachDriveConverter(div.querySelector(".color-image"));
+  attachFileUploader(div);
+}
+addColorRow();
+
+function clearForm() {
+  document.getElementById("title").value = "";
+  document.getElementById("vendor").value = "";
+  document.getElementById("tag").value = "";
+  document.getElementById("price").value = "";
+  document.getElementById("comparePrice").value = "";
+  document.getElementById("sizes").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("colorsList").innerHTML = "";
+  addColorRow();
+}
+
+function slugify(str) {
+  return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function addProduct() {
+  const title = document.getElementById("title").value.trim();
+  const vendor = document.getElementById("vendor").value.trim();
+  const tag = document.getElementById("tag").value.trim() || vendor;
+  const price = document.getElementById("price").value.trim();
+  const comparePrice = document.getElementById("comparePrice").value.trim();
+  const sizesRaw = document.getElementById("sizes").value.trim();
+  const description = document.getElementById("description").value.trim();
+
+  const statusEl = document.getElementById("addStatus");
+
+  if (!title || !vendor || !price || !sizesRaw) {
+    statusEl.textContent = "Please fill in at least Product Name, Brand, Price, and Sizes.";
+    statusEl.style.color = "var(--red)";
+    statusEl.classList.add("visible");
+    return;
+  }
+
+  const sizes = sizesRaw.split(",").map(s => s.trim()).filter(Boolean);
+  const colorRows = document.querySelectorAll("#colorsList .color-row");
+  const colors = [];
+  colorRows.forEach(row => {
+    const name = row.querySelector(".color-name").value.trim();
+    const imagesRaw = row.querySelector(".color-image").value.trim();
+    const images = imagesRaw.split("\n").map(s => s.trim()).filter(Boolean);
+    if (name) colors.push({ name, images });
+  });
+
+  if (colors.length === 0) {
+    statusEl.textContent = "Add at least one color.";
+    statusEl.style.color = "var(--red)";
+    statusEl.classList.add("visible");
+    return;
+  }
+
+  products.push({
+    handle: slugify(title) + "-" + Date.now().toString().slice(-4),
+    title, vendor, tag, price, comparePrice, description, sizes, colors
+  });
+
+  statusEl.textContent = `"${title}" added with ${colors.length} color(s) and ${sizes.length} size(s), ${colors.length * sizes.length} rows.`;
+  statusEl.style.color = "var(--green)";
+  statusEl.classList.add("visible");
+
+  clearForm();
+  renderQueue();
+}
+
+function removeProduct(index) {
+  products.splice(index, 1);
+  renderQueue();
+}
+
+function renderQueue() {
+  const queueEl = document.getElementById("queue");
+  const countEl = document.getElementById("queueCount");
+  const rowCountEl = document.getElementById("rowCountText");
+
+  countEl.textContent = products.length;
+
+  let totalRows = 0;
+  products.forEach(p => totalRows += p.colors.length * p.sizes.length);
+  rowCountEl.textContent = `${totalRows} CSV rows ready`;
+
+  if (products.length === 0) {
+    queueEl.innerHTML = `<div class="empty">No shoes added yet. Fill in the form above and click "Add Shoe to List".</div>`;
+    return;
+  }
+
+  queueEl.innerHTML = products.map((p, i) => {
+    const photoCount = p.colors.reduce((sum, c) => sum + c.images.length, 0);
+    return `
+    <div class="queue-item">
+      <div>
+        <strong>${p.title}</strong>
+        <div class="meta">${p.vendor} · ${p.colors.length} color(s) · ${p.sizes.length} size(s) · ${photoCount} photo(s) · ${p.price} JOD${p.comparePrice ? " (was " + p.comparePrice + ")" : ""}</div>
+      </div>
+      <button onclick="removeProduct(${i})">Remove</button>
+    </div>
+  `;
+  }).join("");
+}
+
+function buildRows() {
+  const header = [
+    "Handle", "Title", "Body (HTML)", "Vendor", "Tags", "Published",
+    "Option1 Name", "Option1 Value", "Option2 Name", "Option2 Value",
+    "Variant Price", "Variant Compare At Price", "Variant Image",
+    "Image Src", "Status"
+  ];
+
+  const rows = [header];
+
+  products.forEach(p => {
+    let firstRowOverall = true;
+    p.colors.forEach(color => {
+      const mainImage = color.images[0] || "";
+      const extraImages = color.images.slice(1);
+      let firstRowForColor = true;
+
+      p.sizes.forEach(size => {
+        rows.push([
+          p.handle,
+          firstRowOverall ? p.title : "",
+          firstRowOverall ? p.description : "",
+          firstRowOverall ? p.vendor : "",
+          firstRowOverall ? p.tag : "",
+          firstRowOverall ? "TRUE" : "",
+          "Color",
+          color.name,
+          "Size",
+          size,
+          p.price,
+          p.comparePrice || "",
+          mainImage,
+          firstRowForColor ? mainImage : "",
+          firstRowOverall ? "active" : ""
+        ]);
+        firstRowOverall = false;
+        firstRowForColor = false;
+      });
+
+      extraImages.forEach(img => {
+        rows.push([
+          p.handle, "", "", "", "", "",
+          "", "", "", "", "", "", "",
+          img, ""
+        ]);
+      });
+    });
+  });
+
+  return rows;
+}
+
+function toCSV(rows) {
+  return rows.map(row =>
+    row.map(cell => {
+      const val = String(cell ?? "");
+      if (val.includes(",") || val.includes('"') || val.includes("\n")) {
+        return '"' + val.replace(/"/g, '""') + '"';
+      }
+      return val;
+    }).join(",")
+  ).join("\n");
+}
+
+function previewCSV() {
+  if (products.length === 0) {
+    alert("Add at least one shoe first.");
+    return;
+  }
+  const rows = buildRows();
+  const box = document.getElementById("previewBox");
+  box.style.display = "block";
+  const header = rows[0];
+  const body = rows.slice(1);
+  box.innerHTML = `<table>
+    <thead><tr>${header.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+    <tbody>${body.map(r => `<tr>${r.map(c => `<td>${c || ""}</td>`).join("")}</tr>`).join("")}</tbody>
+  </table>`;
+}
+
+function downloadCSV() {
+  if (products.length === 0) {
+    alert("Add at least one shoe first.");
+    return;
+  }
+  const rows = buildRows();
+  const csv = toCSV(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "snkrshub-products.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function pushToShopify() {
+  if (products.length === 0) {
+    alert("Add at least one shoe first.");
+    return;
+  }
+  if (!SHOPIFY_SYNC_URL || SHOPIFY_SYNC_URL.includes("PASTE_YOUR")) {
+    alert("Set your Apps Script Web App URL in SHOPIFY_SYNC_URL at the top of the script first.");
+    return;
+  }
+
+  const accessCode = prompt("Enter the access code to push products to Shopify:");
+  if (!accessCode) {
+    return;
+  }
+
+  const logBox = document.getElementById("pushLog");
+  logBox.style.display = "block";
+  logBox.innerHTML = "";
+
+  const remaining = [];
+
+  for (const p of products) {
+    const line = document.createElement("div");
+    line.style.padding = "8px 12px";
+    line.style.borderBottom = "1px solid var(--line)";
+    line.style.fontSize = "13px";
+    line.textContent = `Pushing "${p.title}"...`;
+    logBox.appendChild(line);
+
+    try {
+      const res = await fetch(SHOPIFY_SYNC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ ...p, accessCode })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        line.textContent = `"${p.title}" created in Shopify.`;
+        line.style.color = "var(--green)";
+      } else if (result.error === "UNAUTHORIZED") {
+        line.textContent = `"${p.title}" failed: wrong access code.`;
+        line.style.color = "var(--red)";
+        remaining.push(p);
+      } else {
+        line.textContent = `"${p.title}" failed: ${result.error}`;
+        line.style.color = "var(--red)";
+        remaining.push(p);
+      }
+    } catch (err) {
+      line.textContent = `"${p.title}" failed: ${err.message}`;
+      line.style.color = "var(--red)";
+      remaining.push(p);
+    }
+  }
+
+  products = remaining;
+  renderQueue();
+}
+
+renderQueue();
+</script>
+</body>
+</html>
