@@ -2,288 +2,416 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SNKRS HUB — Shopify CSV Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNKRS HUB | Shopify CSV Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --black: #121110;
+    --ink: #16161a;
     --white: #ffffff;
-    --paper: #faf9f7;
-    --line: #e6e3dd;
-    --line-strong: #d3cfc6;
-    --grey: #726c62;
-    --red: #c8272a;
-    --green: #2e7d4f;
+    --bg: #f3f3f1;
+    --panel: #ffffff;
+    --line: #e4e4e0;
+    --line-strong: #cfcfc9;
+    --muted: #6b6b73;
+    --red: #d1242a;
+    --red-dark: #b01c21;
+    --green: #1f7a4a;
+    --green-bg: #e8f5ee;
+    --red-bg: #fdeceb;
+    --radius: 10px;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    font-family: -apple-system, "Inter", sans-serif;
-    background: var(--white);
-    color: var(--black);
-    padding: 32px 20px 80px;
+    font-family: "Inter", -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 880px; margin: 0 auto; }
-  h1 {
-    font-size: 22px;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    margin-bottom: 4px;
+
+  /* Top bar */
+  .topbar {
+    background: var(--ink);
+    color: var(--white);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
   }
-  .sub { color: var(--grey); font-size: 14px; margin-bottom: 28px; }
-  .card {
+  .brand {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand .dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; }
+  .topbar .tool { font-size: 13px; color: #b9b9c2; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+  .intro { margin-bottom: 26px; }
+  .intro h1 {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    font-size: 32px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .intro p { margin: 0; color: var(--muted); max-width: 620px; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--panel);
     border: 1px solid var(--line);
-    background: var(--paper);
-    border-radius: 4px;
-    padding: 22px;
-    margin-bottom: 22px;
+    border-radius: var(--radius);
+    padding: 26px;
   }
-  .card h2 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--grey);
-    margin: 0 0 16px;
+  .side { position: sticky; top: 20px; }
+
+  .section { padding-bottom: 26px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+  .section:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .section-title {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px;
   }
-  label {
+  .section-note { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+
+  label.field-label {
     display: block;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--grey);
-    margin-bottom: 6px;
-    margin-top: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 14px 0 6px;
   }
-  label:first-of-type { margin-top: 0; }
+  label.field-label:first-of-type { margin-top: 0; }
+  label.field-label small { font-weight: 400; color: var(--muted); }
+
   input, textarea {
     width: 100%;
     border: 1px solid var(--line-strong);
-    border-radius: 3px;
-    padding: 10px 12px;
-    font-size: 14px;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 14.5px;
     font-family: inherit;
     background: var(--white);
-    color: var(--black);
+    color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
   }
-  input:focus, textarea:focus { outline: none; border-color: var(--black); }
-  .hint { font-size: 12px; color: var(--grey); margin-top: 4px; }
+  input::placeholder, textarea::placeholder { color: #a3a3ab; }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(22,22,26,0.08);
+  }
+  textarea { resize: vertical; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .colors-list, .images-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-  .color-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 8px;
-    align-items: start;
-    background: var(--white);
-    border: 1px solid var(--line);
-    padding: 8px;
-    border-radius: 3px;
+  .row2 > div { min-width: 0; }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+
+  /* Price input with currency */
+  .money { position: relative; }
+  .money span {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; color: var(--muted); pointer-events: none;
   }
-  .color-row input { margin: 0; }
-  .color-row textarea { margin: 0; font-size: 13px; min-height: 62px; resize: vertical; }
-  .upload-cell { display: flex; flex-direction: column; gap: 6px; }
-  .upload-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: 1px solid var(--line-strong);
-    background: var(--white);
-    border-radius: 3px;
-    padding: 8px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    text-align: center;
+  .money input { padding-left: 46px; }
+
+  /* Size stock */
+  .qty-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 16px; gap: 12px; flex-wrap: wrap;
   }
-  .upload-btn:hover { border-color: var(--black); }
-  .upload-btn input[type="file"] { display: none; }
-  .upload-status { font-size: 11px; color: var(--grey); min-height: 14px; }
-  .upload-status.uploading { color: var(--black); }
-  .upload-status.error { color: var(--red); }
-  .upload-status.done { color: var(--green); }
-  .remove-btn {
-    background: none;
-    border: 1px solid var(--line-strong);
-    color: var(--red);
-    border-radius: 3px;
-    padding: 8px 10px;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  .add-btn {
-    background: none;
+  .qty-head .title { font-size: 13px; font-weight: 500; }
+  .fill-all { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+  .fill-all input { width: 64px; padding: 6px 8px; font-size: 13px; }
+  .qty-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+  .qty-grid:empty::before {
+    content: "Type your sizes above and a stock box will appear for each one.";
+    font-size: 13px; color: var(--muted);
     border: 1px dashed var(--line-strong);
-    color: var(--black);
-    border-radius: 3px;
-    padding: 10px;
-    width: 100%;
-    cursor: pointer;
-    font-size: 13px;
-    margin-top: 10px;
+    border-radius: 8px; padding: 12px 14px; width: 100%;
   }
-  .add-btn:hover { border-color: var(--black); }
-  .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-  button.primary {
-    background: var(--black);
-    color: var(--white);
-    border: none;
-    border-radius: 3px;
-    padding: 13px 22px;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-  }
-  button.primary:hover { opacity: 0.85; }
-  button.secondary {
+  .qty-item {
+    width: 84px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
     background: var(--white);
-    color: var(--black);
-    border: 1px solid var(--black);
-    border-radius: 3px;
-    padding: 13px 22px;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-  }
-  .queue {
-    border: 1px solid var(--line);
-    border-radius: 4px;
     overflow: hidden;
   }
-  .queue-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--line);
-    font-size: 14px;
+  .qty-item .size {
+    display: block; text-align: center;
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    font-weight: 600; font-size: 14px;
+    background: var(--ink); color: var(--white);
+    padding: 5px 0;
   }
-  .queue-item:last-child { border-bottom: none; }
-  .queue-item .meta { color: var(--grey); font-size: 12px; }
-  .queue-item button {
-    background: none;
-    border: none;
-    color: var(--red);
-    cursor: pointer;
-    font-size: 12px;
-    text-transform: uppercase;
+  .qty-item input {
+    border: none; border-radius: 0; text-align: center;
+    padding: 9px 4px; font-size: 15px; font-weight: 500;
   }
-  .empty { padding: 20px; color: var(--grey); font-size: 14px; text-align: center; }
-  .count-pill {
-    display: inline-block;
-    background: var(--black);
-    color: var(--white);
-    border-radius: 999px;
-    padding: 2px 10px;
-    font-size: 12px;
-    margin-left: 8px;
-  }
-  .export-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 18px;
-    flex-wrap: wrap;
+  .qty-item input:focus { box-shadow: inset 0 0 0 2px var(--ink); }
+
+  /* Colors */
+  .colors-list { display: flex; flex-direction: column; gap: 12px; }
+  .color-row {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
     gap: 12px;
+    align-items: start;
+    background: #fafaf9;
+    border: 1px solid var(--line);
+    padding: 14px;
+    border-radius: 10px;
+  }
+  .color-row input, .color-row textarea { margin: 0; }
+  .color-row textarea { font-size: 13px; min-height: 64px; }
+  .upload-cell { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .upload-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 1px solid var(--ink);
+    background: var(--white);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .upload-btn:hover { background: var(--ink); color: var(--white); }
+  .upload-btn input[type="file"] { display: none; }
+  .upload-status { font-size: 12px; color: var(--muted); min-height: 16px; }
+  .upload-status.uploading { color: var(--ink); }
+  .upload-status.error { color: var(--red); }
+  .upload-status.done { color: var(--green); }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .thumbs img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+  .remove-btn {
+    background: none; border: 1px solid var(--line-strong); color: var(--red);
+    border-radius: 8px; padding: 9px 12px; cursor: pointer; font-size: 13px;
+    font-family: inherit;
+  }
+  .remove-btn:hover { background: var(--red-bg); border-color: var(--red); }
+  .add-btn {
+    background: none; border: 1.5px dashed var(--line-strong); color: var(--ink);
+    border-radius: 10px; padding: 12px; width: 100%; cursor: pointer;
+    font-size: 14px; font-weight: 500; margin-top: 12px; font-family: inherit;
+    transition: border-color .15s, background .15s;
+  }
+  .add-btn:hover { border-color: var(--ink); background: #fafaf9; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  button.primary, button.secondary, button.danger {
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    border-radius: 8px; padding: 12px 20px; cursor: pointer;
+    transition: background .15s, transform .05s, opacity .15s;
+  }
+  button.primary { background: var(--ink); color: var(--white); border: 1px solid var(--ink); }
+  button.primary:hover { background: #2b2b31; }
+  button.red { background: var(--red); border-color: var(--red); }
+  button.red:hover { background: var(--red-dark); }
+  button.secondary { background: var(--white); color: var(--ink); border: 1px solid var(--line-strong); }
+  button.secondary:hover { border-color: var(--ink); }
+  button:active { transform: translateY(1px); }
+  button:focus-visible, .upload-btn:focus-within { outline: 3px solid rgba(209,36,42,0.35); outline-offset: 2px; }
+
+  .form-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-top: 4px;
   }
   .status {
-    font-size: 13px;
-    color: var(--green);
-    margin-top: 10px;
-    display: none;
+    font-size: 13.5px; padding: 10px 14px; border-radius: 8px;
+    margin-top: 16px; display: none;
   }
   .status.visible { display: block; }
+  .status.ok { background: var(--green-bg); color: var(--green); }
+  .status.err { background: var(--red-bg); color: var(--red); }
+
+  /* Side panel */
+  .side-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .side-head h2 { font-family: "Space Grotesk", "Inter", sans-serif; font-size: 18px; margin: 0; }
+  .count-pill {
+    background: var(--red); color: var(--white); border-radius: 999px;
+    padding: 2px 11px; font-size: 13px; font-weight: 600; min-width: 28px; text-align: center;
+  }
+  .queue { max-height: 380px; overflow: auto; margin: 0 -6px; padding: 0 6px; }
+  .queue-item {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .queue-item:last-child { border-bottom: none; }
+  .queue-item strong { display: block; font-size: 14.5px; }
+  .queue-item .meta { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .queue-item .stock { color: var(--ink); font-size: 12.5px; margin-top: 2px; }
+  .queue-item button {
+    background: none; border: none; color: var(--red); cursor: pointer;
+    font-size: 12.5px; font-weight: 500; font-family: inherit; padding: 2px 0;
+  }
+  .queue-item button:hover { text-decoration: underline; }
+  .empty {
+    padding: 22px 12px; color: var(--muted); font-size: 13.5px; text-align: center;
+    border: 1.5px dashed var(--line-strong); border-radius: 10px;
+  }
+  .export { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .row-count { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .export .btn-row { flex-direction: column; }
+  .export button { width: 100%; }
+
+  /* Preview and log */
+  .wide { margin-top: 24px; display: none; }
   .preview {
-    margin-top: 14px;
-    max-height: 220px;
-    overflow: auto;
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    background: var(--white);
+    max-height: 300px; overflow: auto;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--white);
   }
+  .wide h3 { font-family: "Space Grotesk", "Inter", sans-serif; font-size: 16px; margin: 0 0 12px; }
   table { border-collapse: collapse; width: 100%; font-size: 12px; }
-  th, td {
-    border: 1px solid var(--line);
-    padding: 6px 8px;
-    text-align: left;
-    white-space: nowrap;
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; white-space: nowrap; }
+  th { background: #fafaf9; position: sticky; top: 0; font-weight: 600; }
+  .log-line { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .log-line:last-child { border-bottom: none; }
+
+  @media (max-width: 960px) {
+    .layout { grid-template-columns: 1fr; }
+    .side { position: static; }
   }
-  th { background: var(--paper); position: sticky; top: 0; }
+  @media (max-width: 640px) {
+    .page { padding: 20px 14px 60px; }
+    .panel { padding: 18px; }
+    .row2 { grid-template-columns: 1fr; }
+    .color-row { grid-template-columns: 1fr; }
+    .intro h1 { font-size: 26px; }
+    .topbar .tool { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Shopify CSV Generator</h1>
-  <p class="sub">Fill in one shoe at a time. It expands into every color and size combination automatically, ready to upload straight into Shopify's product importer.</p>
 
-  <div class="card">
-    <h2>Add a Shoe</h2>
+<header class="topbar">
+  <div class="brand"><span class="dot"></span> SNKRS HUB</div>
+  <div class="tool">Shopify CSV generator</div>
+</header>
 
-    <label>Product Name</label>
-    <input id="title" placeholder="e.g. Featherweight">
-
-    <div class="row2">
-      <div>
-        <label>Brand / Vendor</label>
-        <input id="vendor" placeholder="e.g. New Balance">
-      </div>
-      <div>
-        <label>Tag (usually same as brand)</label>
-        <input id="tag" placeholder="e.g. New Balance">
-      </div>
-    </div>
-
-    <div class="row2">
-      <div>
-        <label>Price (JOD)</label>
-        <input id="price" type="number" step="0.01" placeholder="e.g. 40">
-      </div>
-      <div>
-        <label>Compare At Price (only if on sale, leave blank otherwise)</label>
-        <input id="comparePrice" type="number" step="0.01" placeholder="e.g. 50">
-      </div>
-    </div>
-
-    <label>Sizes (comma separated)</label>
-    <input id="sizes" placeholder="36, 37, 38, 39, 40">
-    <p class="hint">These apply to every color you add below.</p>
-
-    <label>Description (optional)</label>
-    <textarea id="description" rows="2" placeholder="Short product description"></textarea>
-
-    <label>Colors</label>
-    <p class="hint">Click "Upload Photo" to pick images straight from your computer, they upload automatically and the link fills in for you. You can still paste Google Drive links directly if you'd rather.</p>
-    <div class="colors-list" id="colorsList"></div>
-    <button class="add-btn" onclick="addColorRow()">+ Add another color</button>
-
-    <div class="btn-row">
-      <button class="primary" onclick="addProduct()">Add Shoe to List</button>
-      <button class="secondary" onclick="clearForm()">Clear Form</button>
-    </div>
-    <div class="status" id="addStatus"></div>
+<main class="page">
+  <div class="intro">
+    <h1>Add shoes, get a Shopify file</h1>
+    <p>Fill in one shoe at a time. It expands into every color and size, with stock per size, ready to upload to Shopify or push straight to your store.</p>
   </div>
 
-  <div class="card">
-    <h2>Your Products <span class="count-pill" id="queueCount">0</span></h2>
-    <div class="queue" id="queue">
-      <div class="empty">No shoes added yet. Fill in the form above and click "Add Shoe to List".</div>
+  <div class="layout">
+
+    <!-- FORM -->
+    <div class="panel">
+
+      <div class="section">
+        <h2 class="section-title">Product details</h2>
+        <p class="section-note">The basics customers will see.</p>
+
+        <label class="field-label" for="title">Product name</label>
+        <input id="title" placeholder="e.g. Featherweight">
+
+        <div class="row2">
+          <div>
+            <label class="field-label" for="vendor">Brand / vendor</label>
+            <input id="vendor" placeholder="e.g. New Balance">
+          </div>
+          <div>
+            <label class="field-label" for="tag">Tag <small>(usually same as brand)</small></label>
+            <input id="tag" placeholder="e.g. New Balance">
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label class="field-label" for="price">Price</label>
+            <div class="money"><span>JOD</span><input id="price" type="number" step="0.01" min="0" placeholder="40"></div>
+          </div>
+          <div>
+            <label class="field-label" for="comparePrice">Compare at price <small>(only if on sale)</small></label>
+            <div class="money"><span>JOD</span><input id="comparePrice" type="number" step="0.01" min="0" placeholder="50"></div>
+          </div>
+        </div>
+
+        <label class="field-label" for="description">Description <small>(optional)</small></label>
+        <textarea id="description" rows="2" placeholder="Short product description"></textarea>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Sizes and stock</h2>
+        <p class="section-note">Sizes apply to every color. Selling stops automatically when a size reaches 0.</p>
+
+        <label class="field-label" for="sizes">Sizes <small>(comma separated)</small></label>
+        <input id="sizes" placeholder="36, 37, 38, 39, 40">
+
+        <div class="qty-head">
+          <span class="title">Stock per size</span>
+          <span class="fill-all">Set all to <input type="number" min="0" id="fillAll" placeholder="0"></span>
+        </div>
+        <div id="sizeQtyBox" class="qty-grid"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Colors and photos</h2>
+        <p class="section-note">Upload photos from your computer and the links fill in for you. You can also paste Google Drive links, one per line. The first photo is the main one.</p>
+        <div class="colors-list" id="colorsList"></div>
+        <button class="add-btn" onclick="addColorRow()">+ Add another color</button>
+      </div>
+
+      <div class="form-actions">
+        <button class="secondary" onclick="clearForm()">Clear form</button>
+        <button class="primary red" onclick="addProduct()">Add shoe to list</button>
+      </div>
+      <div class="status" id="addStatus"></div>
     </div>
 
-    <div class="export-bar">
-      <span class="hint" id="rowCountText">0 CSV rows ready</span>
-      <div class="btn-row" style="margin-top:0;">
-        <button class="secondary" onclick="previewCSV()">Preview CSV</button>
-        <button class="secondary" onclick="downloadCSV()">Download CSV</button>
-        <button class="primary" onclick="pushToShopify()">Push to Shopify</button>
+    <!-- SIDE: QUEUE + EXPORT -->
+    <aside class="panel side">
+      <div class="side-head">
+        <h2>Your products</h2>
+        <span class="count-pill" id="queueCount">0</span>
       </div>
-    </div>
-    <div class="preview" id="previewBox" style="display:none;"></div>
-    <div class="preview" id="pushLog" style="display:none;"></div>
+      <div class="queue" id="queue">
+        <div class="empty">No shoes yet. Fill in the form and click "Add shoe to list".</div>
+      </div>
+
+      <div class="export">
+        <div class="row-count" id="rowCountText">0 CSV rows ready</div>
+        <div class="btn-row">
+          <button class="secondary" onclick="previewCSV()">Preview CSV</button>
+          <button class="secondary" onclick="downloadCSV()">Download CSV</button>
+          <button class="primary" onclick="pushToShopify()">Push to Shopify</button>
+        </div>
+      </div>
+    </aside>
   </div>
-</div>
+
+  <div class="panel wide" id="previewWrap">
+    <h3>CSV preview</h3>
+    <div class="preview" id="previewBox"></div>
+  </div>
+  <div class="panel wide" id="logWrap">
+    <h3>Push results</h3>
+    <div class="preview" id="pushLog"></div>
+  </div>
+</main>
 
 <script>
-// Paste your Google Apps Script Web App URL here after you deploy it
+// Google Apps Script Web App URL
 const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbzcTnwK9T159cug3R9cKje3HyTvEgrSNIjPPcwVA-qD-TXx1mORi1-hU_Jw5_niVhBt/exec";
 
 // Cloudinary account details, used to turn uploaded photos into public URLs
@@ -293,6 +421,28 @@ const CLOUDINARY_UPLOAD_PRESET = "snkrshub_products";
 let products = [];
 let colorRowId = 0;
 
+function esc(str) {
+  return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ---------- Size and stock boxes ---------- */
+function renderSizeQty() {
+  const box = document.getElementById("sizeQtyBox");
+  const sizes = document.getElementById("sizes").value.split(",").map(s => s.trim()).filter(Boolean);
+  const old = {};
+  box.querySelectorAll("input").forEach(i => { old[i.dataset.size] = i.value; });
+  box.innerHTML = sizes.map(s =>
+    `<div class="qty-item"><span class="size">${esc(s)}</span><input type="number" min="0" data-size="${esc(s)}" value="${esc(old[s] ?? "")}" placeholder="Qty" aria-label="Stock for size ${esc(s)}"></div>`
+  ).join("");
+}
+document.getElementById("sizes").addEventListener("input", renderSizeQty);
+
+document.getElementById("fillAll").addEventListener("input", (e) => {
+  const v = e.target.value;
+  document.querySelectorAll("#sizeQtyBox input").forEach(i => { i.value = v; });
+});
+
+/* ---------- Uploads ---------- */
 function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
@@ -307,10 +457,19 @@ function uploadToCloudinary(file) {
   }).then(data => data.secure_url);
 }
 
+function renderThumbs(colorRowEl) {
+  const textarea = colorRowEl.querySelector(".color-image");
+  const thumbs = colorRowEl.querySelector(".thumbs");
+  const urls = textarea.value.split("\n").map(s => s.trim()).filter(Boolean);
+  thumbs.innerHTML = urls.map(u => `<img src="${esc(u)}" alt="" onerror="this.style.display='none'">`).join("");
+}
+
 function attachFileUploader(colorRowEl) {
   const fileInput = colorRowEl.querySelector(".color-file-input");
   const textarea = colorRowEl.querySelector(".color-image");
   const statusEl = colorRowEl.querySelector(".upload-status");
+
+  textarea.addEventListener("input", () => renderThumbs(colorRowEl));
 
   fileInput.addEventListener("change", async () => {
     const files = Array.from(fileInput.files);
@@ -328,6 +487,7 @@ function attachFileUploader(colorRowEl) {
         uploaded++;
         statusEl.className = "upload-status uploading";
         statusEl.textContent = `Uploading ${uploaded} of ${files.length}...`;
+        renderThumbs(colorRowEl);
       } catch (err) {
         statusEl.className = "upload-status error";
         statusEl.textContent = `Upload failed: ${err.message}`;
@@ -349,7 +509,7 @@ function convertDriveLink(text) {
   });
 }
 
-function attachDriveConverter(textarea) {
+function attachDriveConverter(textarea, rowEl) {
   textarea.addEventListener("paste", (e) => {
     e.preventDefault();
     const pasted = (e.clipboardData || window.clipboardData).getData("text");
@@ -360,6 +520,7 @@ function attachDriveConverter(textarea) {
     textarea.value = current.slice(0, start) + converted + current.slice(end);
     const newPos = start + converted.length;
     textarea.selectionStart = textarea.selectionEnd = newPos;
+    renderThumbs(rowEl);
   });
 }
 
@@ -369,31 +530,29 @@ function addColorRow() {
   div.className = "color-row";
   div.dataset.id = colorRowId;
   div.innerHTML = `
-    <input placeholder="Color name (e.g. Blush)" class="color-name">
+    <input placeholder="Color name (e.g. Blush)" class="color-name" aria-label="Color name">
     <div class="upload-cell">
-      <textarea placeholder="Paste Google Drive link(s) here, one per line, or click Upload Photo below." class="color-image"></textarea>
+      <textarea placeholder="Paste Google Drive link(s) here, one per line, or click Upload photos below." class="color-image"></textarea>
+      <div class="thumbs"></div>
       <label class="upload-btn">
-        Upload Photo(s)
+        Upload photos
         <input type="file" class="color-file-input" accept="image/*" multiple>
       </label>
       <div class="upload-status"></div>
     </div>
-    <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+    <button class="remove-btn" onclick="this.closest('.color-row').remove()">Remove</button>
   `;
   document.getElementById("colorsList").appendChild(div);
-  attachDriveConverter(div.querySelector(".color-image"));
+  attachDriveConverter(div.querySelector(".color-image"), div);
   attachFileUploader(div);
 }
 addColorRow();
 
 function clearForm() {
-  document.getElementById("title").value = "";
-  document.getElementById("vendor").value = "";
-  document.getElementById("tag").value = "";
-  document.getElementById("price").value = "";
-  document.getElementById("comparePrice").value = "";
-  document.getElementById("sizes").value = "";
-  document.getElementById("description").value = "";
+  ["title", "vendor", "tag", "price", "comparePrice", "sizes", "description", "fillAll"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("sizeQtyBox").innerHTML = "";
   document.getElementById("colorsList").innerHTML = "";
   addColorRow();
 }
@@ -402,6 +561,13 @@ function slugify(str) {
   return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function showStatus(msg, ok) {
+  const el = document.getElementById("addStatus");
+  el.textContent = msg;
+  el.className = "status visible " + (ok ? "ok" : "err");
+}
+
+/* ---------- Add / remove products ---------- */
 function addProduct() {
   const title = document.getElementById("title").value.trim();
   const vendor = document.getElementById("vendor").value.trim();
@@ -411,16 +577,17 @@ function addProduct() {
   const sizesRaw = document.getElementById("sizes").value.trim();
   const description = document.getElementById("description").value.trim();
 
-  const statusEl = document.getElementById("addStatus");
-
   if (!title || !vendor || !price || !sizesRaw) {
-    statusEl.textContent = "Please fill in at least Product Name, Brand, Price, and Sizes.";
-    statusEl.style.color = "var(--red)";
-    statusEl.classList.add("visible");
+    showStatus("Please fill in at least Product name, Brand, Price, and Sizes.", false);
     return;
   }
 
   const sizes = sizesRaw.split(",").map(s => s.trim()).filter(Boolean);
+  const qtys = {};
+  document.querySelectorAll("#sizeQtyBox input").forEach(i => {
+    qtys[i.dataset.size] = parseInt(i.value, 10) || 0;
+  });
+
   const colorRows = document.querySelectorAll("#colorsList .color-row");
   const colors = [];
   colorRows.forEach(row => {
@@ -431,20 +598,16 @@ function addProduct() {
   });
 
   if (colors.length === 0) {
-    statusEl.textContent = "Add at least one color.";
-    statusEl.style.color = "var(--red)";
-    statusEl.classList.add("visible");
+    showStatus("Add at least one color.", false);
     return;
   }
 
   products.push({
     handle: slugify(title) + "-" + Date.now().toString().slice(-4),
-    title, vendor, tag, price, comparePrice, description, sizes, colors
+    title, vendor, tag, price, comparePrice, description, sizes, qtys, colors
   });
 
-  statusEl.textContent = `"${title}" added with ${colors.length} color(s) and ${sizes.length} size(s), ${colors.length * sizes.length} rows.`;
-  statusEl.style.color = "var(--green)";
-  statusEl.classList.add("visible");
+  showStatus(`"${title}" added with ${colors.length} color(s) and ${sizes.length} size(s), ${colors.length * sizes.length} rows.`, true);
 
   clearForm();
   renderQueue();
@@ -467,17 +630,19 @@ function renderQueue() {
   rowCountEl.textContent = `${totalRows} CSV rows ready`;
 
   if (products.length === 0) {
-    queueEl.innerHTML = `<div class="empty">No shoes added yet. Fill in the form above and click "Add Shoe to List".</div>`;
+    queueEl.innerHTML = `<div class="empty">No shoes yet. Fill in the form and click "Add shoe to list".</div>`;
     return;
   }
 
   queueEl.innerHTML = products.map((p, i) => {
     const photoCount = p.colors.reduce((sum, c) => sum + c.images.length, 0);
+    const totalStock = p.sizes.reduce((sum, s) => sum + (p.qtys[s] || 0), 0) * p.colors.length;
     return `
     <div class="queue-item">
       <div>
-        <strong>${p.title}</strong>
-        <div class="meta">${p.vendor} · ${p.colors.length} color(s) · ${p.sizes.length} size(s) · ${photoCount} photo(s) · ${p.price} JOD${p.comparePrice ? " (was " + p.comparePrice + ")" : ""}</div>
+        <strong>${esc(p.title)}</strong>
+        <div class="meta">${esc(p.vendor)} | ${p.colors.length} color(s) | ${p.sizes.length} size(s) | ${photoCount} photo(s)</div>
+        <div class="stock">${esc(p.price)} JOD${p.comparePrice ? " (was " + esc(p.comparePrice) + ")" : ""} | ${totalStock} in stock</div>
       </div>
       <button onclick="removeProduct(${i})">Remove</button>
     </div>
@@ -485,12 +650,14 @@ function renderQueue() {
   }).join("");
 }
 
+/* ---------- CSV ---------- */
 function buildRows() {
   const header = [
     "Handle", "Title", "Body (HTML)", "Vendor", "Tags", "Published",
     "Option1 Name", "Option1 Value", "Option2 Name", "Option2 Value",
     "Variant Price", "Variant Compare At Price", "Variant Image",
-    "Image Src", "Status"
+    "Image Src", "Status",
+    "Variant Inventory Tracker", "Variant Inventory Qty", "Variant Inventory Policy"
   ];
 
   const rows = [header];
@@ -518,7 +685,10 @@ function buildRows() {
           p.comparePrice || "",
           mainImage,
           firstRowForColor ? mainImage : "",
-          firstRowOverall ? "active" : ""
+          firstRowOverall ? "active" : "",
+          "shopify",
+          p.qtys[size] ?? 0,
+          "deny"
         ]);
         firstRowOverall = false;
         firstRowForColor = false;
@@ -528,7 +698,7 @@ function buildRows() {
         rows.push([
           p.handle, "", "", "", "", "",
           "", "", "", "", "", "", "",
-          img, ""
+          img, "", "", "", ""
         ]);
       });
     });
@@ -555,14 +725,15 @@ function previewCSV() {
     return;
   }
   const rows = buildRows();
+  document.getElementById("previewWrap").style.display = "block";
   const box = document.getElementById("previewBox");
-  box.style.display = "block";
   const header = rows[0];
   const body = rows.slice(1);
   box.innerHTML = `<table>
-    <thead><tr>${header.map(h => `<th>${h}</th>`).join("")}</tr></thead>
-    <tbody>${body.map(r => `<tr>${r.map(c => `<td>${c || ""}</td>`).join("")}</tr>`).join("")}</tbody>
+    <thead><tr>${header.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+    <tbody>${body.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>
   </table>`;
+  document.getElementById("previewWrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function downloadCSV() {
@@ -583,6 +754,7 @@ function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
+/* ---------- Push to Shopify ---------- */
 async function pushToShopify() {
   if (products.length === 0) {
     alert("Add at least one shoe first.");
@@ -598,17 +770,17 @@ async function pushToShopify() {
     return;
   }
 
+  const logWrap = document.getElementById("logWrap");
   const logBox = document.getElementById("pushLog");
-  logBox.style.display = "block";
+  logWrap.style.display = "block";
   logBox.innerHTML = "";
+  logWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
   const remaining = [];
 
   for (const p of products) {
     const line = document.createElement("div");
-    line.style.padding = "8px 12px";
-    line.style.borderBottom = "1px solid var(--line)";
-    line.style.fontSize = "13px";
+    line.className = "log-line";
     line.textContent = `Pushing "${p.title}"...`;
     logBox.appendChild(line);
 
