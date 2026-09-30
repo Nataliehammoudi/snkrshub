@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNKRS HUB | Products</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #16161a; --white: #ffffff; --bg: #f3f3f1; --panel: #ffffff;
+    --line: #e4e4e0; --line-strong: #cfcfc9; --muted: #6b6b73;
+    --red: #d1242a; --red-dark: #b01c21;
+    --green: #1f7a4a; --green-bg: #e8f5ee;
+    --amber: #9a6b0a; --amber-bg: #fbf0dc;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Inter", -apple-system, sans-serif;
+    background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    background: var(--ink); color: var(--white); padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .brand {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .brand .dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; }
+  .topbar .tool { font-size: 13px; color: #b9b9c2; }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
+  .intro h1 { font-family: "Space Grotesk", sans-serif; font-size: 30px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .intro p { margin: 0 0 22px; color: var(--muted); max-width: 600px; }
+
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; flex-wrap: wrap; margin-bottom: 18px;
+  }
+  .search { min-width: 240px; flex: 1; max-width: 380px; }
+  .search input {
+    width: 100%; border: 1px solid var(--line-strong); border-radius: 8px;
+    padding: 9px 12px; font-size: 14px; font-family: inherit; background: var(--white);
+  }
+  .search input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(22,22,26,0.08); }
+  button.refresh {
+    background: var(--white); border: 1px solid var(--line-strong); color: var(--ink);
+    border-radius: 8px; padding: 9px 14px; font-size: 13.5px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+  }
+  button.refresh:hover { border-color: var(--ink); }
+
+  .state { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 14px; }
+  .state.error { color: var(--red); }
+
+  .products { display: flex; flex-direction: column; gap: 12px; }
+  .product-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .product-head {
+    display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+    cursor: pointer;
+  }
+  .product-head img {
+    width: 52px; height: 52px; object-fit: cover; border-radius: 8px;
+    background: var(--bg); flex-shrink: 0;
+  }
+  .product-head .info { flex: 1; min-width: 0; }
+  .product-head .title { font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 15.5px; }
+  .product-head .meta { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .product-head .chevron { color: var(--muted); font-size: 13px; flex-shrink: 0; transition: transform .15s; }
+  .product-card.open .chevron { transform: rotate(90deg); }
+
+  .badge { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; margin-left: 8px; }
+  .badge.active { background: var(--green-bg); color: var(--green); }
+  .badge.draft { background: var(--amber-bg); color: var(--amber); }
+  .badge.soldout { background: #fdeceb; color: var(--red); }
+
+  .product-body { display: none; padding: 0 18px 20px; border-top: 1px solid var(--line); }
+  .product-card.open .product-body { display: block; }
+
+  label.field-label { display: block; font-size: 12.5px; font-weight: 500; margin: 14px 0 6px; }
+  label.field-label:first-child { margin-top: 16px; }
+  input, textarea, select {
+    width: 100%; border: 1px solid var(--line-strong); border-radius: 8px;
+    padding: 9px 11px; font-size: 14px; font-family: inherit; background: var(--white); color: var(--ink);
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(22,22,26,0.08); }
+  textarea { resize: vertical; min-height: 56px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .color-group { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .color-group-head {
+    background: #fafaf9; padding: 9px 14px; font-weight: 600; font-size: 13.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  .variant-row {
+    display: grid; grid-template-columns: 56px 1fr 1fr 90px; gap: 10px;
+    align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line);
+  }
+  .variant-row:last-child { border-bottom: none; }
+  .variant-row .size-tag {
+    font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 13px;
+    background: var(--ink); color: var(--white); border-radius: 6px; text-align: center; padding: 5px 0;
+  }
+  .variant-row input { padding: 7px 9px; font-size: 13.5px; }
+  .variant-row .qty-wrap { position: relative; }
+  .variant-row .qty-wrap input.zero { border-color: var(--red); color: var(--red); }
+  .variant-col-label { font-size: 10.5px; text-transform: none; color: var(--muted); display: block; margin-bottom: 3px; }
+
+  .variant-header-row {
+    display: grid; grid-template-columns: 56px 1fr 1fr 90px; gap: 10px;
+    padding: 0 14px; margin-top: 4px;
+  }
+  .variant-header-row span { font-size: 11px; color: var(--muted); }
+
+  .save-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 18px; gap: 12px; flex-wrap: wrap;
+  }
+  button.save {
+    background: var(--ink); color: var(--white); border: 1px solid var(--ink);
+    border-radius: 8px; padding: 11px 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  button.save:hover { background: #2b2b31; }
+  button.save:disabled { opacity: 0.5; cursor: default; }
+  .save-status { font-size: 13px; }
+  .save-status.ok { color: var(--green); }
+  .save-status.err { color: var(--red); }
+
+  @media (max-width: 640px) {
+    .page { padding: 20px 14px 60px; }
+    .row2 { grid-template-columns: 1fr; }
+    .variant-row, .variant-header-row { grid-template-columns: 44px 1fr 1fr 76px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span> SNKRS HUB</div>
+  <div class="tool">Products</div>
+</header>
+
+<main class="page">
+  <div class="intro">
+    <h1>Products</h1>
+    <p>Edit details, prices, and stock per size and color. Changes are saved straight to Shopify.</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="search"><input id="search" placeholder="Search by product name or vendor"></div>
+    <button class="refresh" onclick="loadProducts()">Refresh</button>
+  </div>
+
+  <div id="productsBox">
+    <div class="state">Loading products...</div>
+  </div>
+</main>
+
+<script>
+// Same Google Apps Script Web App URL used by the generator and orders page
+const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbzcTnwK9T159cug3R9cKje3HyTvEgrSNIjPPcwVA-qD-TXx1mORi1-hU_Jw5_niVhBt/exec";
+
+let accessCode = null;
+let products = [];
+let originals = {}; // productId -> deep copy snapshot, to diff on save
+
+function esc(str) {
+  return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function getAccessCode() {
+  if (!accessCode) accessCode = prompt("Enter the access code:");
+  return accessCode;
+}
+
+async function callScript(payload) {
+  const res = await fetch(SHOPIFY_SYNC_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+async function loadProducts() {
+  const code = getAccessCode();
+  if (!code) return;
+
+  const box = document.getElementById("productsBox");
+  box.innerHTML = `<div class="state">Loading products...</div>`;
+
+  try {
+    const result = await callScript({ action: "listProducts", accessCode: code });
+    if (!result.success) {
+      if (result.error === "UNAUTHORIZED") accessCode = null;
+      box.innerHTML = `<div class="state error">Could not load products: ${esc(result.error)}</div>`;
+      return;
+    }
+    products = result.products;
+    originals = {};
+    products.forEach(p => { originals[p.id] = JSON.parse(JSON.stringify(p)); });
+    renderProducts();
+  } catch (err) {
+    box.innerHTML = `<div class="state error">Could not load products: ${esc(err.message)}</div>`;
+  }
+}
+
+function groupByColor(variants) {
+  const groups = {};
+  const order = [];
+  variants.forEach(v => {
+    const key = v.color || "Default";
+    if (!groups[key]) { groups[key] = []; order.push(key); }
+    groups[key].push(v);
+  });
+  return order.map(name => ({ name, variants: groups[name] }));
+}
+
+function totalStock(p) {
+  return p.variants.reduce((sum, v) => sum + (parseInt(v.inventory_quantity, 10) || 0), 0);
+}
+
+function matchesSearch(p, q) {
+  if (!q) return true;
+  q = q.toLowerCase();
+  return p.title.toLowerCase().includes(q) || (p.vendor || "").toLowerCase().includes(q);
+}
+
+function renderProducts() {
+  const box = document.getElementById("productsBox");
+  const q = document.getElementById("search").value.trim();
+  const visible = products.filter(p => matchesSearch(p, q));
+
+  if (visible.length === 0) {
+    box.innerHTML = `<div class="state">No products match your search.</div>`;
+    return;
+  }
+
+  box.innerHTML = `<div class="products">${visible.map(productCard).join("")}</div>`;
+}
+
+function productCard(p) {
+  const stock = totalStock(p);
+  const soldOut = stock === 0;
+  const statusBadge = p.status === "active" ? `<span class="badge active">Active</span>` : `<span class="badge draft">${esc(p.status)}</span>`;
+
+  return `
+  <div class="product-card" data-id="${p.id}">
+    <div class="product-head" onclick="toggleProduct(${p.id})">
+      <img src="${esc(p.image)}" alt="" onerror="this.style.visibility='hidden'">
+      <div class="info">
+        <div class="title">${esc(p.title)} ${statusBadge}${soldOut ? '<span class="badge soldout">Sold out</span>' : ''}</div>
+        <div class="meta">${esc(p.vendor)} · ${p.variants.length} variant(s) · ${stock} in stock</div>
+      </div>
+      <div class="chevron">▸</div>
+    </div>
+    <div class="product-body">${productForm(p)}</div>
+  </div>`;
+}
+
+function productForm(p) {
+  const colorGroups = groupByColor(p.variants);
+
+  const colorsHtml = colorGroups.map(group => `
+    <div class="color-group">
+      <div class="color-group-head">${esc(group.name)}</div>
+      <div class="variant-header-row">
+        <span>Size</span><span>Price (JOD)</span><span>Compare at</span><span>Stock</span>
+      </div>
+      ${group.variants.map(v => `
+        <div class="variant-row" data-variant-id="${v.id}">
+          <div class="size-tag">${esc(v.size || "-")}</div>
+          <div>
+            <input type="number" step="0.01" min="0" class="v-price" value="${esc(v.price)}">
+          </div>
+          <div>
+            <input type="number" step="0.01" min="0" class="v-compare" value="${esc(v.compare_at_price || "")}" placeholder="—">
+          </div>
+          <div class="qty-wrap">
+            <input type="number" min="0" class="v-qty ${(parseInt(v.inventory_quantity,10)||0) === 0 ? 'zero' : ''}" value="${esc(v.inventory_quantity)}" data-inventory-item-id="${esc(v.inventory_item_id)}">
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
+
+  return `
+    <label class="field-label">Product name</label>
+    <input class="p-title" value="${esc(p.title)}">
+
+    <div class="row2">
+      <div>
+        <label class="field-label">Vendor</label>
+        <input class="p-vendor" value="${esc(p.vendor)}">
+      </div>
+      <div>
+        <label class="field-label">Status</label>
+        <select class="p-status">
+          <option value="active" ${p.status === "active" ? "selected" : ""}>Active</option>
+          <option value="draft" ${p.status === "draft" ? "selected" : ""}>Draft</option>
+          <option value="archived" ${p.status === "archived" ? "selected" : ""}>Archived</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="field-label">Description</label>
+    <textarea class="p-description">${esc(p.description).replace(/&lt;/g, "<").replace(/&gt;/g, ">")}</textarea>
+
+    ${colorsHtml}
+
+    <div class="save-row">
+      <span class="save-status" data-role="save-status"></span>
+      <button class="save" onclick="saveProduct(${p.id}, this)">Save changes</button>
+    </div>
+  `;
+}
+
+function toggleProduct(id) {
+  const card = document.querySelector(`.product-card[data-id="${id}"]`);
+  card.classList.toggle("open");
+}
+
+async function saveProduct(productId, btn) {
+  const card = btn.closest(".product-card");
+  const original = originals[productId];
+  const statusEl = card.querySelector('[data-role="save-status"]');
+  btn.disabled = true;
+  statusEl.className = "save-status";
+  statusEl.textContent = "Saving...";
+
+  const code = getAccessCode();
+  const tasks = [];
+
+  const newTitle = card.querySelector(".p-title").value.trim();
+  const newVendor = card.querySelector(".p-vendor").value.trim();
+  const newStatus = card.querySelector(".p-status").value;
+  const newDescription = card.querySelector(".p-description").value;
+
+  if (newTitle !== original.title || newVendor !== original.vendor || newStatus !== original.status || newDescription !== original.description) {
+    tasks.push(callScript({
+      action: "updateProductInfo",
+      accessCode: code,
+      productId: productId,
+      title: newTitle,
+      vendor: newVendor,
+      status: newStatus,
+      tags: original.tags,
+      description: newDescription
+    }));
+  }
+
+  card.querySelectorAll(".variant-row").forEach(row => {
+    const variantId = parseInt(row.dataset.variantId, 10);
+    const origVariant = original.variants.find(v => v.id === variantId);
+    const newPrice = row.querySelector(".v-price").value;
+    const newCompare = row.querySelector(".v-compare").value;
+    const qtyInput = row.querySelector(".v-qty");
+    const newQty = parseInt(qtyInput.value, 10) || 0;
+
+    if (String(newPrice) !== String(origVariant.price) || String(newCompare || "") !== String(origVariant.compare_at_price || "")) {
+      tasks.push(callScript({
+        action: "updateVariant",
+        accessCode: code,
+        variantId: variantId,
+        price: newPrice,
+        compareAtPrice: newCompare || null
+      }));
+    }
+
+    if (newQty !== (parseInt(origVariant.inventory_quantity, 10) || 0)) {
+      tasks.push(callScript({
+        action: "setVariantInventory",
+        accessCode: code,
+        variantId: variantId,
+        inventoryItemId: qtyInput.dataset.inventoryItemId,
+        quantity: newQty
+      }));
+    }
+  });
+
+  if (tasks.length === 0) {
+    btn.disabled = false;
+    statusEl.className = "save-status ok";
+    statusEl.textContent = "Nothing to save.";
+    return;
+  }
+
+  try {
+    const results = await Promise.all(tasks);
+    const failed = results.find(r => !r.success);
+    if (failed) throw new Error(failed.error);
+
+    statusEl.className = "save-status ok";
+    statusEl.textContent = "Saved.";
+    await loadProducts();
+    document.querySelector(`.product-card[data-id="${productId}"]`)?.classList.add("open");
+  } catch (err) {
+    statusEl.className = "save-status err";
+    statusEl.textContent = "Failed: " + err.message;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("search").addEventListener("input", renderProducts);
+
+loadProducts();
+</script>
+</body>
+</html>
