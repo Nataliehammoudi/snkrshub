@@ -56,6 +56,14 @@
   }
   .brand .dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; }
   .topbar .tool { font-size: 13px; color: #b9b9c2; }
+  .pagenav { display: flex; gap: 18px; }
+  .pagenav a {
+    color: #b9b9c2; text-decoration: none; font-size: 13.5px; font-weight: 500;
+    padding: 4px 0; border-bottom: 2px solid transparent;
+  }
+  .pagenav a:hover { color: var(--white); }
+  .pagenav a.active { color: var(--white); border-bottom-color: var(--red); }
+  @media (max-width: 640px) { .pagenav { gap: 12px; } }
 
   .page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
   .intro { margin-bottom: 26px; }
@@ -304,7 +312,10 @@
 
 <header class="topbar">
   <div class="brand"><span class="dot"></span> SNKRS HUB</div>
-  <div class="tool">Shopify CSV generator</div>
+  <nav class="pagenav">
+    <a href="index.html" class="active">Add products</a>
+    <a href="products.html">Manage products</a>
+  </nav>
 </header>
 
 <main class="page">
@@ -412,7 +423,7 @@
 
 <script>
 // Google Apps Script Web App URL
-const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbwAjhpN7bD-Rz5JIIuCEU7--nOT0d0CeZnQVjceGh_6oYk8uYJXOdlKvbz-9wqV0yFo/exec";
+const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbzcTnwK9T159cug3R9cKje3HyTvEgrSNIjPPcwVA-qD-TXx1mORi1-hU_Jw5_niVhBt/exec";
 
 // Cloudinary account details, used to turn uploaded photos into public URLs
 const CLOUDINARY_CLOUD_NAME = "zc9wvarz";
