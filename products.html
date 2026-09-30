@@ -32,6 +32,14 @@
   }
   .brand .dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; }
   .topbar .tool { font-size: 13px; color: #b9b9c2; }
+  .pagenav { display: flex; gap: 18px; }
+  .pagenav a {
+    color: #b9b9c2; text-decoration: none; font-size: 13.5px; font-weight: 500;
+    padding: 4px 0; border-bottom: 2px solid transparent;
+  }
+  .pagenav a:hover { color: var(--white); }
+  .pagenav a.active { color: var(--white); border-bottom-color: var(--red); }
+  @media (max-width: 640px) { .pagenav { gap: 12px; } }
 
   .page { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
   .intro h1 { font-family: "Space Grotesk", sans-serif; font-size: 30px; margin: 0 0 6px; letter-spacing: -0.01em; }
@@ -145,7 +153,10 @@
 
 <header class="topbar">
   <div class="brand"><span class="dot"></span> SNKRS HUB</div>
-  <div class="tool">Products</div>
+  <nav class="pagenav">
+    <a href="index.html">Add products</a>
+    <a href="products.html" class="active">Manage products</a>
+  </nav>
 </header>
 
 <main class="page">
@@ -166,9 +177,9 @@
 
 <script>
 // Same Google Apps Script Web App URL used by the generator and orders page
-const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbwAjhpN7bD-Rz5JIIuCEU7--nOT0d0CeZnQVjceGh_6oYk8uYJXOdlKvbz-9wqV0yFo/exec";
+const SHOPIFY_SYNC_URL = "https://script.google.com/macros/s/AKfycbzcTnwK9T159cug3R9cKje3HyTvEgrSNIjPPcwVA-qD-TXx1mORi1-hU_Jw5_niVhBt/exec";
 
-let accessCode = null;
+let accessCode = localStorage.getItem("snkrshub_access_code");
 let products = [];
 let originals = {}; // productId -> deep copy snapshot, to diff on save
 
@@ -177,7 +188,10 @@ function esc(str) {
 }
 
 function getAccessCode() {
-  if (!accessCode) accessCode = prompt("Enter the access code:");
+  if (!accessCode) {
+    accessCode = prompt("Enter the access code:");
+    if (accessCode) localStorage.setItem("snkrshub_access_code", accessCode);
+  }
   return accessCode;
 }
 
@@ -200,7 +214,10 @@ async function loadProducts() {
   try {
     const result = await callScript({ action: "listProducts", accessCode: code });
     if (!result.success) {
-      if (result.error === "UNAUTHORIZED") accessCode = null;
+      if (result.error === "UNAUTHORIZED") {
+        accessCode = null;
+        localStorage.removeItem("snkrshub_access_code");
+      }
       box.innerHTML = `<div class="state error">Could not load products: ${esc(result.error)}</div>`;
       return;
     }
