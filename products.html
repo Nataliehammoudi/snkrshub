@@ -415,10 +415,21 @@ async function saveProduct(productId, btn) {
     const failed = results.find(r => !r.success);
     if (failed) throw new Error(failed.error);
 
-    statusEl.className = "save-status ok";
+        statusEl.className = "save-status ok";
     statusEl.textContent = "Saved.";
-    await loadProducts();
-    document.querySelector(`.product-card[data-id="${productId}"]`)?.classList.add("open");
+    originals[productId].title = newTitle;
+    originals[productId].vendor = newVendor;
+    originals[productId].status = newStatus;
+    originals[productId].description = newDescription;
+    card.querySelectorAll(".variant-row").forEach(row => {
+      const variantId = parseInt(row.dataset.variantId, 10);
+      const v = originals[productId].variants.find(x => x.id === variantId);
+      v.price = row.querySelector(".v-price").value;
+      v.compare_at_price = row.querySelector(".v-compare").value || null;
+      v.inventory_quantity = parseInt(row.querySelector(".v-qty").value, 10) || 0;
+      v.inventory_policy = "deny";
+    });
+    btn.disabled = false;
   } catch (err) {
     statusEl.className = "save-status err";
     statusEl.textContent = "Failed: " + err.message;
